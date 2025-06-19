@@ -200,13 +200,12 @@ class BLEEvent {
   // Disable copy to prevent double-delete
   BLEEvent(const BLEEvent &) = delete;
   BLEEvent &operator=(const BLEEvent &) = delete;
-
   union {
     // NOLINTNEXTLINE(readability-identifier-naming)
     struct gap_event {
       esp_gap_ble_cb_event_t gap_event;
       union {
-        BLEScanResult scan_result;  // 73 bytes - Used by: esp32_ble_tracker
+        BLEScanResult scan_result;  // 73 bytes
         // This matches ESP-IDF's scan complete event structures
         // All three (scan_param_cmpl, scan_start_cmpl, scan_stop_cmpl) have identical layout
         // Used by: esp32_ble_tracker
@@ -317,42 +316,6 @@ class BLEEvent {
 
       case ESP_GAP_BLE_SCAN_STOP_COMPLETE_EVT:
         this->event_.gap.scan_complete.status = p->scan_stop_cmpl.status;
-        break;
-
-      // Advertising complete events - all have same structure with just status
-      // Used by: esp32_ble_beacon, esp32_ble server components
-      case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT:
-        this->event_.gap.adv_complete.status = p->adv_data_cmpl.status;
-        break;
-      case ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT:
-        this->event_.gap.adv_complete.status = p->scan_rsp_data_cmpl.status;
-        break;
-      case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:  // Used by: esp32_ble_beacon
-        this->event_.gap.adv_complete.status = p->adv_data_raw_cmpl.status;
-        break;
-      case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:  // Used by: esp32_ble_beacon
-        this->event_.gap.adv_complete.status = p->adv_start_cmpl.status;
-        break;
-      case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:  // Used by: esp32_ble_beacon
-        this->event_.gap.adv_complete.status = p->adv_stop_cmpl.status;
-        break;
-
-      // RSSI complete event
-      // Used by: ble_client (ble_rssi_sensor)
-      case ESP_GAP_BLE_READ_RSSI_COMPLETE_EVT:
-        this->event_.gap.read_rssi_complete.status = p->read_rssi_cmpl.status;
-        this->event_.gap.read_rssi_complete.rssi = p->read_rssi_cmpl.rssi;
-        memcpy(this->event_.gap.read_rssi_complete.remote_addr, p->read_rssi_cmpl.remote_addr, sizeof(esp_bd_addr_t));
-        break;
-
-      // Security events - copy the entire security union
-      // Used by: ble_client, bluetooth_proxy, esp32_ble_client
-      case ESP_GAP_BLE_AUTH_CMPL_EVT:      // Used by: bluetooth_proxy, esp32_ble_client
-      case ESP_GAP_BLE_SEC_REQ_EVT:        // Used by: esp32_ble_client
-      case ESP_GAP_BLE_PASSKEY_NOTIF_EVT:  // Used by: ble_client automation
-      case ESP_GAP_BLE_PASSKEY_REQ_EVT:    // Used by: ble_client automation
-      case ESP_GAP_BLE_NC_REQ_EVT:         // Used by: ble_client automation
-        memcpy(&this->event_.gap.security, &p->ble_security, sizeof(esp_ble_sec_t));
         break;
 
       default:

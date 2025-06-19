@@ -200,6 +200,7 @@ class BLEEvent {
   // Disable copy to prevent double-delete
   BLEEvent(const BLEEvent &) = delete;
   BLEEvent &operator=(const BLEEvent &) = delete;
+
   union {
     // NOLINTNEXTLINE(readability-identifier-naming)
     struct gap_event {

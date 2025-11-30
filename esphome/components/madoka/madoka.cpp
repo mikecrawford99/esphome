@@ -154,6 +154,7 @@ void Madoka::gattc_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc
     case ESP_GATTC_DISCONNECT_EVT: {
       this->node_state = espbt::ClientState::IDLE;  // ??
       setpoint_adapter_.resetTemperatures();
+      this->pending_chunks_.clear();
       this->publish_state();
       break;
     }
@@ -219,9 +220,7 @@ void Madoka::process_incoming_chunk_(std::vector<uint8_t> chk) {
     return;
   }
   if (this->pending_chunks_.count(chunk_id)) {
-    ESP_LOGE(TAG, "Another packet with the same chunk ID is already in the buffer.");
-    ESP_LOGD(TAG, "Chunk ID: %d.", chunk_id);
-    return;
+    ESP_LOGW(TAG, "Duplicate chunk ID %d received, replacing existing chunk.", chunk_id);
   }
   this->pending_chunks_[chunk_id] = chk;
 
